@@ -19,3 +19,5 @@ They need to store data about clients, their portfolios, individual assets, tran
 - Price N - 1 Asset (and at most one price per asset per date)
 
 ## ER Diagram
+
+![ERD.png](ERD.png)
