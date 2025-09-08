@@ -1,6 +1,5 @@
 import argparse
-from db_functions import get_connection, create_tables, load_sample_data, get_clients_with_portfolios
-
+from db_functions import *
 def format_query_results(results, columns):
     if not results:
         return "No results found."
@@ -15,8 +14,11 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "action",
-        choices=["init", "load_data", "total_val"],
-        help="Action to perform: 'init' to create tables, 'load_data' to load sample data, 'total_val' to run a query"
+        choices=["init", "load_data", "total_val", "port_vals"],
+        help="Action to perform: 'init' to create tables, " \
+        "'load_data' to load sample data, " \
+        "'total_val' to get a mapping of client names to portfolio ids, " \
+        "port_vals to get values of each portfolio"
     )
 
     parser.add_argument(
@@ -34,5 +36,8 @@ if __name__ == "__main__":
         load_sample_data(conn)
     elif args.action == "total_val":
         results, columns = get_clients_with_portfolios(conn)
+        print(format_query_results(results, columns))
+    elif args.action == "port_vals":
+        results, columns = get_portfolio_total_values(conn)
         print(format_query_results(results, columns))
 

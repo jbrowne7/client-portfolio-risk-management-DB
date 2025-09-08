@@ -22,6 +22,18 @@ def get_clients_with_portfolios(conn):
     cur.close()
     return results, columns
 
+def get_portfolio_total_values(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT p.portfolio_id, SUM(t.quantity * t.price) AS total_value
+        FROM portfolios p
+        JOIN trades t ON p.portfolio_id = t.portfolio_id
+        GROUP BY p.portfolio_id;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    return results, columns
+
 def load_sample_data(conn):
     with open("../sql/insert_sample_data.sql", "r") as f:
         schema_sql = f.read()
