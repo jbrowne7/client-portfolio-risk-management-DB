@@ -1,91 +1,38 @@
 import argparse
-import psycopg2
-import os
-from dotenv import load_dotenv
+from db_functions import get_connection, create_tables, load_sample_data, get_clients_with_portfolios
 
-load_dotenv(dotenv_path="../.env")
-
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-
-def execute_sql(sql_path):
-    with open(sql_path, "r") as f:
-        schema_sql = f.read()
-    
-    conn = psycopg2.connect(
-        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
-    )
-
-    cur = conn.cursor()
-
-    for statement_raw in schema_sql.split(";"):
-        statement = statement_raw.strip()
-        if statement:
-            cur.execute(statement + ";")
-    cur.close()
-    conn.commit()
-    conn.close()
-    print(f"Executed {sql_path}")
-
-def run_query(sql_path, query_number):
-    with open(sql_path, "r") as f:
-        queries = [q.strip() for q in f.read().split(";") if q.strip()]
-    if query_number is not None:
-        try:
-            if query_number >= 1 and query_number <= len(queries):
-                query = queries[query_number - 1]
-            else:
-                print(f"Query number must be between [1 and {len(queries)}] (inclusive)")
-                return
-        except IndexError:
-            print(f"No query {query_number} found")
-            return
-    else:
-        print("No query number given")
-        return
-    query = queries[query_number - 1]
-    print(f"************************")
-    print(f"Running query_number: {query_number}\nRunning the following SQL query:\n{query}")
-    print(f"************************\n")
-    conn = psycopg2.connect(
-        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
-    )
-    cur = conn.cursor()
-    cur.execute(query)
-
-    if cur.description is not None:
-        rows = cur.fetchall()
-        columns = [desc[0] for desc in cur.description]
-        print("\t".join(columns))
-        for row in rows:
-            print("\t".join(str(col) for col in row))
-        print(f"Successfully executed query")
-    else:
-        print("Executed query but no results")
-
-    cur.close()
-    conn.close()
+def format_query_results(results, columns):
+    if not results:
+        return "No results found."
+    col_widths = [max(len(str(col)), max(len(str(row[i])) for row in results)) for i, col in enumerate(columns)]
+    header = " | ".join(str(col).ljust(col_widths[i]) for i, col in enumerate(columns))
+    sep = "-+-".join("-" * w for w in col_widths)
+    rows = [" | ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row)) for row in results]
+    return "\n".join([header, sep] + rows)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "action",
-        choices=["schema", "data", "query"],
-        help="Action to perform: 'schema' to create tables, 'data' to load sample data, 'query' to run a query"
+        choices=["init", "load_data", "total_val"],
+        help="Action to perform: 'init' to create tables, 'load_data' to load sample data, 'total_val' to run a query"
     )
+
     parser.add_argument(
         "--query-number",
         type=int,
         help="Query number to run from possible queries"
     )
+
     args = parser.parse_args()
-    if args.action == "schema":
-        execute_sql("../sql/schema.sql")
-    elif args.action == "data":
-        execute_sql("../sql/insert_sample_data.sql")
-    elif args.action == "query":
-        run_query("../sql/queries.sql", args.query_number)
+    conn = get_connection()
+
+    if args.action == "init":
+        create_tables(conn)
+    elif args.action == "load_data":
+        load_sample_data(conn)
+    elif args.action == "total_val":
+        results, columns = get_clients_with_portfolios(conn)
+        print(format_query_results(results, columns))
 

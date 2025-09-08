@@ -1,0 +1,59 @@
+import psycopg2
+import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path="../.env")
+
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+
+def get_clients_with_portfolios(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT c.name AS client_name, p.portfolio_id
+        FROM clients c
+        JOIN portfolios p ON c.client_id = p.client_id;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
+def load_sample_data(conn):
+    with open("../sql/insert_sample_data.sql", "r") as f:
+        schema_sql = f.read()
+    
+    cur = conn.cursor()
+
+    for statement_raw in schema_sql.split(";"):
+        statement = statement_raw.strip()
+        if statement:
+            cur.execute(statement + ";")
+    cur.close()
+    conn.commit()
+    conn.close()
+
+def create_tables(conn):
+    with open("../sql/schema.sql", "r") as f:
+        schema_sql = f.read()
+
+    cur = conn.cursor()
+    for statement_raw in schema_sql.split(";"):
+        statement = statement_raw.strip()
+        if statement:
+            cur.execute(statement + ";")
+    cur.close()
+    conn.commit()
+    conn.close()
+
+def get_connection():
+    return psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
