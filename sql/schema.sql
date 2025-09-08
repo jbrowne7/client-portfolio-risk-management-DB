@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS clients (
 CREATE TABLE IF NOT EXISTS portfolios (
     portfolio_id SERIAL PRIMARY KEY,
     client_id INTEGER NOT NULL REFERENCES clients(client_id)
+    cash_balance NUMERIC NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS assets (
