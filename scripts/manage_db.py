@@ -1,3 +1,4 @@
+import argparse
 import psycopg2
 import os
 from dotenv import load_dotenv
@@ -10,8 +11,8 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
-def run_schema():
-    with open("../sql/schema.sql", "r") as f:
+def execute_sql(sql_path):
+    with open(sql_path, "r") as f:
         schema_sql = f.read()
     
     conn = psycopg2.connect(
@@ -27,8 +28,18 @@ def run_schema():
     cur.close()
     conn.commit()
     conn.close()
-    print("Database schema created")
+    print(f"Executed {sql_path}")
 
 if __name__ == "__main__":
-    run_schema()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "action",
+        choices=["schema", "data"],
+        help="Action to perform: 'schema' to create tables, 'data' to load sample data"
+    )
+    args = parser.parse_args()
+    if args.action == "schema":
+        execute_sql("../sql/schema.sql")
+    elif args.action == "data":
+        execute_sql("../sql/insert_sample_data.sql")
 
