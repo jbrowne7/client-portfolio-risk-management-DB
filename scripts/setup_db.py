@@ -19,8 +19,13 @@ def run_schema():
     )
 
     cur = conn.cursor()
-    cur.execute(schema_sql)
+
+    for statement_raw in schema_sql.split(";"):
+        statement = statement_raw.strip()
+        if statement:
+            cur.execute(statement + ";")
     cur.close()
+    conn.commit()
     conn.close()
     print("Database schema created")
 
