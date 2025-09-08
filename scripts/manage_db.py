@@ -39,12 +39,30 @@ def run_query(sql_path, query_number):
                 query = queries[query_number - 1]
             else:
                 print(f"Query number must be between [1 and {len(queries)}] (inclusive)")
+                return
         except IndexError:
             print(f"No query {query_number} found")
             return
     else:
         print("No query number given")
         return
+    query = queries[query_number - 1]
+    print(f"************************")
+    print(f"Running query_number: {query_number}\nRunning the following SQL query:\n{query}")
+    print(f"************************\n")
+    conn = psycopg2.connect(
+        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
+    )
+    cur = conn.cursor()
+    cur.execute(query)
+
+    rows = cur.fetchall()
+    print(rows)
+
+    cur.close()
+    conn.commit()
+    conn.close()
+    print(f"Successfully executed query")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
