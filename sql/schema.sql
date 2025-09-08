@@ -1,21 +1,21 @@
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
     client_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE portfolios (
+CREATE TABLE IF NOT EXISTS portfolios (
     portfolio_id SERIAL PRIMARY KEY,
     client_id INTEGER NOT NULL REFERENCES clients(client_id)
 );
 
-CREATE TABLE assets (
+CREATE TABLE IF NOT EXISTS assets (
     asset_id SERIAL PRIMARY KEY,
     symbol VARCHAR(8) NOT NULL,
     asset_class VARCHAR(20) NOT NULL,
     base_currency VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE trades (
+CREATE TABLE IF NOT EXISTS trades (
     trade_id SERIAL PRIMARY KEY,
     portfolio_id INTEGER NOT NULL REFERENCES portfolios(portfolio_id),
     asset_id INTEGER NOT NULL REFERENCES assets(asset_id),
@@ -25,7 +25,7 @@ CREATE TABLE trades (
     price NUMERIC NOT NULL
 );
 
-create table prices (
+create table IF NOT EXISTS prices (
     asset_id INTEGER NOT NULL REFERENCES assets(asset_id),
     price_date DATE NOT NULL,
     price NUMERIC NOT NULL,
