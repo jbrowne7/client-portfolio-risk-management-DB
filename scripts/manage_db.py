@@ -56,13 +56,18 @@ def run_query(sql_path, query_number):
     cur = conn.cursor()
     cur.execute(query)
 
-    rows = cur.fetchall()
-    print(rows)
+    if cur.description is not None:
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        print("\t".join(columns))
+        for row in rows:
+            print("\t".join(str(col) for col in row))
+        print(f"Successfully executed query")
+    else:
+        print("Executed query but no results")
 
     cur.close()
-    conn.commit()
     conn.close()
-    print(f"Successfully executed query")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
