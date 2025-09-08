@@ -33,11 +33,12 @@ def execute_sql(sql_path):
 def run_query(sql_path, query_number):
     with open(sql_path, "r") as f:
         queries = [q.strip() for q in f.read().split(";") if q.strip()]
-        print(len(queries))
     if query_number is not None:
         try:
-            query = queries[query_number - 1]
-            print(query)
+            if query_number >= 1 and query_number <= len(queries):
+                query = queries[query_number - 1]
+            else:
+                print(f"Query number must be between [1 and {len(queries)}] (inclusive)")
         except IndexError:
             print(f"No query {query_number} found")
             return
