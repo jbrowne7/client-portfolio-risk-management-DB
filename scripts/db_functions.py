@@ -10,6 +10,30 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
+def get_all_clients(conn):
+    cur = conn.cursor()
+    cur.execute("SELECT client_id, name FROM clients;")
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
+def search_clients_by_name(conn, name):
+    cur = conn.cursor()
+    cur.execute("SELECT client_id, name FROM clients WHERE name ILIKE %s;", (f"%{name}%",))
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
+def add_client(conn, name):
+    cur = conn.cursor()
+    cur.execute("INSERT INTO clients (name) VALUES (%s) RETURNING client_id;", (name,))
+    client_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    print(f"Added client '{name}' with client_id {client_id}")
+
 def get_percentage_invested(conn):
     cur = conn.cursor()
     cur.execute("""
