@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS clients (
     client_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
+    first_name VARCHAR(100) NOT NULL
+    last_name VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS portfolios (
