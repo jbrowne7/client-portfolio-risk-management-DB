@@ -10,19 +10,49 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
+def get_assets_with_possible_notes(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT a.asset_id, a.symbol, n.note_id, n.note
+        FROM assets a
+        LEFT JOIN asset_notes n ON a.asset_id = n.asset_id
+        ORDER BY a.asset_id;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
 
+def get_notes_with_possible_assets(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT n.note_id, n.note, a.asset_id, a.symbol
+        FROM asset_notes n
+        RIGHT JOIN assets a ON n.asset_id = a.asset_id;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
 
+def get_all_assets_and_notes(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT a.asset_id, a.symbol, n.note_id, n.note
+        FROM assets a
+        FULL OUTER JOIN asset_notes n ON a.asset_id = n.asset_id;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
 
-# This function might not really be practical as a left join? Wanted to show usage / knowledge of left
-# joins but I think every asset should have at least one price entry so not sure, this was the only
-# idea I could think of for using left join at the moment. This problem is because most fields in my schema
-# are required I think.
 def get_assets_latest_price(conn):
     cur = conn.cursor()
     cur.execute("""
         SELECT a.asset_id, a.symbol, p.price_date, p.price
         FROM assets a
-        LEFT JOIN prices p ON a.asset_id = p.asset_id AND p.price_date = (
+        JOIN prices p ON a.asset_id = p.asset_id AND p.price_date = (
             SELECT MAX(price_date) FROM prices WHERE asset_id = a.asset_id
         )
         ORDER BY a.asset_id;
