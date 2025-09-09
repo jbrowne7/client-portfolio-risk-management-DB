@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 
 def create_migration_file(migration_name):
-    migrations_dir = "../migrations"
+    migrations_dir = os.path.join("..", "migrations")
     os.makedirs(migrations_dir, exist_ok=True)
 
     existing = [f for f in os.listdir(migrations_dir) if f.endswith(".sql")]
