@@ -15,7 +15,11 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "action",
-        choices=["init", "load_data", "total_val", "port_vals", "percent_invested", "add_client", "search_client", "get_all_clients", "portfolio_asset_trades"],
+        choices=["init", "load_data", "total_val", "port_vals", 
+                 "percent_invested", "add_client", "search_client", 
+                 "get_all_clients", "portfolio_asset_trades",
+                 "get_top_portfolios", "get_clients_with_no_trades",
+                 "get_trade_counts_by_asset"],
         help="Action to perform: 'init' to create tables, " \
         "'load_data' to load sample data, " \
         "'total_val' to get a mapping of client names to portfolio ids, " \
@@ -25,6 +29,9 @@ if __name__ == "__main__":
         "'search_client' to search for a client by their name for their ID" \
         "'get_all_clients' to get all clients in the db" \
         "'portfolio_asset_trades' to get all trades for a particular asset within a portfolio (ordered by trade date)" \
+        "'get_top_portfolios' to get top `n` portfolios by total value, default `n` is 5" \
+        "'get_clients_with_no_trades' to get clients who have not got any trades in any of their portfolios" \
+        "'get_trade_counts_by_asset' to get a total count of trades for each asset"
     )
 
     parser.add_argument(
@@ -45,22 +52,26 @@ if __name__ == "__main__":
         help="ID of the asset (use with 'portfolio_asset_trades')"
     )
 
+    parser.add_argument(
+        "--n",
+        type=str,
+        help="integer used in get_top_portfolios to specify number of portfolios to get"
+    )
+
     args = parser.parse_args()
     conn = get_connection()
 
+    results = columns = None
     if args.action == "init":
         create_tables(conn)
     elif args.action == "load_data":
         load_sample_data(conn)
     elif args.action == "total_val":
         results, columns = get_clients_with_portfolios(conn)
-        print(format_query_results(results, columns))
     elif args.action == "port_vals":
         results, columns = get_portfolio_total_values(conn)
-        print(format_query_results(results, columns))
     elif args.action == "percent_invested":
         results, columns = get_percentage_invested(conn)
-        print(format_query_results(results, columns))
     elif args.action == "add_client":
         if not args.name:
             print("Please provide a client name with --name")
@@ -71,15 +82,24 @@ if __name__ == "__main__":
             print("Please provide a name to search with --name")
         else:
             results, columns = search_clients_by_name(conn, args.name)
-            print(format_query_results(results, columns))
     elif args.action == "get_all_clients":
         results, columns = get_all_clients(conn)
-        print(format_query_results(results, columns))
     elif args.action == "portfolio_asset_trades":
         if not args.portfolio_id or not args.asset_id:
             print("Please prove both a portfolio id with --portfolio_id and asset id with --asset_id")
         else:
             results, columns = get_all_trades_for_asset_in_portfolio(conn, args.portfolio_id, args.asset_id)
-            print(format_query_results(results, columns))
+    elif args.action == "get_top_portfolios":
+        if not args.n:
+            results, columns = get_top_portfolios_by_value(conn)
+        else:
+            results, columns = get_top_portfolios_by_value(conn, args.n)
+    elif args.action == "get_clients_with_no_trades":
+        results, columns = get_clients_with_no_trades(conn)
+    elif args.action == "get_trade_counts_by_asset":
+        results, columns = get_trade_counts_by_asset(conn)
+    
+    if results and columns:
+        print(format_query_results(results, columns))
         
 

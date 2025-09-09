@@ -10,6 +10,50 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
+def get_top_portfolios_by_value(conn, limit=5):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT p.portfolio_id, SUM(t.quantity * t.price) AS total_value
+        FROM portfolios p
+        JOIN trades t ON p.portfolio_id = t.portfolio_id
+        GROUP BY p.portfolio_id
+        ORDER BY total_value DESC
+        LIMIT %s;
+    """, (limit,))
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
+def get_clients_with_no_trades(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT c.client_id, c.name
+        FROM clients c
+        WHERE c.client_id NOT IN (
+            SELECT p.client_id
+            FROM portfolios p
+            JOIN trades t ON p.portfolio_id = t.portfolio_id
+        )
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
+def get_trade_counts_by_asset(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT asset_id, COUNT(*) AS trade_count
+        FROM trades
+        GROUP BY asset_id
+        ORDER BY trade_count DESC;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
 def get_all_trades_for_asset_in_portfolio(conn, portfolio_id, asset_id):
     cur = conn.cursor()
     cur.execute("""
