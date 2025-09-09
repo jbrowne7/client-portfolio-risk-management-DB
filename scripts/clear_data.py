@@ -1,7 +1,6 @@
 from db_functions import get_connection
 
-def reset_db():
-    conn = get_connection()
+def reset_db(conn):
     cur = conn.cursor()
 
     # Disable foreign key checks to be able to delete data
@@ -19,6 +18,3 @@ def reset_db():
     cur.close()
     conn.close()
     print("Database reset: all data deleted and sequences reset.")
-
-if __name__ == "__main__":
-    reset_db()

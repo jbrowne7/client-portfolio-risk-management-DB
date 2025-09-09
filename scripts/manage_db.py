@@ -1,5 +1,8 @@
 import argparse
 from db_functions import *
+from clear_data import reset_db
+from create_migration import create_migration_file
+from run_migration import run_migration
 
 def format_query_results(results, columns):
     if not results:
@@ -21,7 +24,9 @@ if __name__ == "__main__":
                  "get_top_portfolios", "get_clients_with_no_trades",
                  "get_trade_counts_by_asset", "get_recent_trades",
                  "get_assets_latest_price", "get_notes_with_possible_assets",
-                 "get_all_assets_and_notes", "get_assets_with_possible_notes"],
+                 "get_all_assets_and_notes", "get_assets_with_possible_notes",
+                 "make_migration", "run_migration", "wipe_db"],
+
         help="Action to perform: 'init' to create tables, " \
         "'load_data' to load sample data, " \
         "'get_portfolios_with_clients' to get a mapping of client names to portfolio ids, " \
@@ -38,7 +43,10 @@ if __name__ == "__main__":
         "'get_assets_latest_price' to get the latest price of assets" \
         "'get_notes_with_possible_assets' to get all notes and their linked asset if they have one" \
         "'get_all_assets_and_notes' to get all notes matched with assets if possible" \
-        "'get_assets_with_possible_notes' to get all assets matched with notes if possible"
+        "'get_assets_with_possible_notes' to get all assets matched with notes if possible" \
+        "'make_migration' to create db migration file" \
+        "'run_migration' to run a migration file" \
+        "'wipe_db' deletes all records in the db" \
     )
 
     parser.add_argument(
@@ -115,6 +123,18 @@ if __name__ == "__main__":
         results, columns = get_all_assets_and_notes(conn)
     elif args.action == "get_assets_with_possible_notes":
         results, columns = get_assets_with_possible_notes(conn)
+    elif args.action == "wipe_db":
+        reset_db(conn)
+    elif args.action == "make_migration":
+        if not args.name:
+            print("Please provide a name for the migration with --name")
+        else: 
+            create_migration_file(args.name)
+    elif args.action == "run_migration":
+        if not args.name:
+            print("Please provide the filepath for the migration file with --name")
+        else:
+            run_migration(args.name)
 
     if results and columns:
         print(format_query_results(results, columns))

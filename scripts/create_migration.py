@@ -11,11 +11,10 @@ def create_migration_file(migration_name):
     next_number = max(numbers, default=0) + 1
     filename = f"{next_number:03d}_{migration_name}.sql"
     filepath = os.path.join(migrations_dir, filename)
-    print(filepath)
 
     with open(filepath, "w") as f:
         f.write(f"-- Migration: {migration_name}\n-- Created: {datetime.now()}\n\n-- Write your SQL changes below\n")
-    print(f"Created migration file: {filepath}")
+    print(f"Created migration file: {os.path.abspath(filepath)}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
