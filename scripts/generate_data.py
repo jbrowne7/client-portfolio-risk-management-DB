@@ -71,6 +71,22 @@ def generate_prices(conn, num, asset_ids):
     conn.commit()
     cur.close()
 
+def generate_asset_notes(conn, num_notes, asset_ids):
+    cur = conn.cursor()
+    for _ in range(num_notes):
+        # Using this to randomly decide whether to link the note to an asset or leave it unlinked, 0.8 = 80%
+        if random.random() < 0.8:  
+            asset_id = random.choice(asset_ids)
+        else:
+            asset_id = None 
+        note = fake.sentence(nb_words=10)
+        cur.execute(
+            "INSERT INTO asset_notes (asset_id, note) VALUES (%s, %s);",
+            (asset_id, note)
+        )
+    conn.commit()
+    cur.close()
+
 if __name__ == "__main__":
     conn = get_connection()
     print("Generating clients...")
@@ -99,6 +115,9 @@ if __name__ == "__main__":
 
     print("Generating prices...")
     generate_prices(conn, NUM_PRICES, asset_ids)
+
+    print("Generating asset notes...")
+    generate_asset_notes(conn, 20, asset_ids)
 
     conn.close()
     print("Sample data generation complete.")
