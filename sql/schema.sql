@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS clients (
     client_id SERIAL PRIMARY KEY,
-    first_name VARCHAR(100) NOT NULL
+    first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL
 );
 
@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS prices (
     PRIMARY KEY (asset_id, price_date)
 );
 
-CREATE TABLE IF NOT EXISTS asset_notes {
+CREATE TABLE IF NOT EXISTS asset_notes (
     note_id SERIAL PRIMARY KEY,
     asset_id INTEGER,
     note TEXT
-}
+);
