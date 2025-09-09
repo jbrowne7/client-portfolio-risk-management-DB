@@ -1,4 +1,5 @@
 import argparse
+import sys
 from db_functions import *
 from clear_data import reset_db
 from create_migration import create_migration_file
@@ -14,64 +15,76 @@ def format_query_results(results, columns):
     return "\n".join([header, sep] + rows)
 
 if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        print(f"Try '{sys.argv[0]} --help' for more information.")
+        sys.exit(0)
+
+    usage = f"""{sys.argv[0]} [action] [options...]
+
+Actions:
+  init                             Create tables
+  generate_data                    Generate sample data using python data
+  load_data                        Load sample data
+  get_portfolios_with_clients      Get mapping of client names to portfolio ids
+  port_vals                        Get values of each portfolio
+  percent_invested                 Get percentage invested for each portfolio
+  add_client                       Add a new client to the clients table
+  search_client                    Search for a client by their name for their ID
+  get_all_clients                  Get all clients in the db
+  portfolio_asset_trades           Get all trades for a particular asset within a portfolio (ordered by trade date)
+  get_top_portfolios               Get top n portfolios by total value, default n is 5
+  get_clients_with_no_trades       Get clients who have not got any trades in any of their portfolios
+  get_trade_counts_by_asset        Get a total count of trades for each asset
+  get_recent_trades                Get all trades opened within the last 30 days
+  get_assets_latest_price          Get the latest price of assets
+  get_notes_with_possible_assets   Get all notes and their linked asset if they have one
+  get_all_assets_and_notes         Get all notes matched with assets if possible
+  get_assets_with_possible_notes   Get all assets matched with notes if possible
+  make_migration                   Create db migration file
+  run_migration                    Run a migration file
+  wipe_db                          Deletes all records in the db
+
+Options:
+  -h, --help                  Show this help message
+  --name <name>               Name of the client (use with 'add_client', 'search_client')
+  --portfolio_id <id>         ID of the portfolio (use with 'portfolio_asset_trades')
+  --asset_id <id>             ID of the asset (use with 'portfolio_asset_trades')
+  --n <number>                Number of portfolios to get (use with 'get_top_portfolios')
+"""
+
+    choices=["init", "load_data", "get_portfolios_with_clients", "port_vals", 
+                "percent_invested", "add_client", "search_client", 
+                "get_all_clients", "portfolio_asset_trades",
+                "get_top_portfolios", "get_clients_with_no_trades",
+                "get_trade_counts_by_asset", "get_recent_trades",
+                "get_assets_latest_price", "get_notes_with_possible_assets",
+                "get_all_assets_and_notes", "get_assets_with_possible_notes",
+                "make_migration", "run_migration", "wipe_db"]
+    
+    
     parser = argparse.ArgumentParser()
+
+    parser = argparse.ArgumentParser(
+        description="Client Portfolio Risk Management CLI",
+        usage=usage,
+        formatter_class=argparse.RawTextHelpFormatter,
+        add_help=False
+    )
+
+    # Had to add this to remove error when running --help
+    if "--help" in sys.argv or "-h" in sys.argv:
+        parser.print_help()
+        sys.exit(0)
 
     parser.add_argument(
         "action",
-        choices=["init", "load_data", "get_portfolios_with_clients", "port_vals", 
-                 "percent_invested", "add_client", "search_client", 
-                 "get_all_clients", "portfolio_asset_trades",
-                 "get_top_portfolios", "get_clients_with_no_trades",
-                 "get_trade_counts_by_asset", "get_recent_trades",
-                 "get_assets_latest_price", "get_notes_with_possible_assets",
-                 "get_all_assets_and_notes", "get_assets_with_possible_notes",
-                 "make_migration", "run_migration", "wipe_db"],
-
-        help="Action to perform: 'init' to create tables, " \
-        "'load_data' to load sample data, " \
-        "'get_portfolios_with_clients' to get a mapping of client names to portfolio ids, " \
-        "'port_vals' to get values of each portfolio" \
-        "'percent_invested' to get percentage invested for each portfolio" \
-        "'add_client' to add a new client to the clients table" \
-        "'search_client' to search for a client by their name for their ID" \
-        "'get_all_clients' to get all clients in the db" \
-        "'portfolio_asset_trades' to get all trades for a particular asset within a portfolio (ordered by trade date)" \
-        "'get_top_portfolios' to get top `n` portfolios by total value, default `n` is 5" \
-        "'get_clients_with_no_trades' to get clients who have not got any trades in any of their portfolios" \
-        "'get_trade_counts_by_asset' to get a total count of trades for each asset" \
-        "'get_recent_trades' to get all trades opened within the last 30 days"
-        "'get_assets_latest_price' to get the latest price of assets" \
-        "'get_notes_with_possible_assets' to get all notes and their linked asset if they have one" \
-        "'get_all_assets_and_notes' to get all notes matched with assets if possible" \
-        "'get_assets_with_possible_notes' to get all assets matched with notes if possible" \
-        "'make_migration' to create db migration file" \
-        "'run_migration' to run a migration file" \
-        "'wipe_db' deletes all records in the db" \
+        choices=choices,
     )
 
-    parser.add_argument(
-        "--name",
-        type=str,
-        help="Name of the client (use with 'add_client', 'search_client')"
-    )
-
-    parser.add_argument(
-        "--portfolio_id",
-        type=str,
-        help="ID of the portfolio (use with 'portfolio_asset_trades')"
-    )
-
-    parser.add_argument(
-        "--asset_id",
-        type=str,
-        help="ID of the asset (use with 'portfolio_asset_trades')"
-    )
-
-    parser.add_argument(
-        "--n",
-        type=str,
-        help="integer used in get_top_portfolios to specify number of portfolios to get"
-    )
+    parser.add_argument("--name", type=str, help="Client name or migration file path")
+    parser.add_argument("--portfolio_id", type=int, help="Portfolio ID")
+    parser.add_argument("--asset_id", type=int, help="Asset ID")
+    parser.add_argument("--n", type=int, help="Limit for top portfolios")
 
     args = parser.parse_args()
     conn = get_connection()
