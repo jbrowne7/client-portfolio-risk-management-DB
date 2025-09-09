@@ -15,21 +15,34 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "action",
-        choices=["init", "load_data", "total_val", "port_vals", "percent_invested", "add_client", "search_client", "get_all_clients"],
+        choices=["init", "load_data", "total_val", "port_vals", "percent_invested", "add_client", "search_client", "get_all_clients", "portfolio_asset_trades"],
         help="Action to perform: 'init' to create tables, " \
         "'load_data' to load sample data, " \
         "'total_val' to get a mapping of client names to portfolio ids, " \
-        "port_vals to get values of each portfolio" \
-        "percent_invested to get percentage invested for each portfolio" \
-        "add_client to add a new client to the clients table" \
-        "search_client to search for a client by their name for their ID" \
-        "get_all_clients to get all clients in the db"
+        "'port_vals' to get values of each portfolio" \
+        "'percent_invested' to get percentage invested for each portfolio" \
+        "'add_client' to add a new client to the clients table" \
+        "'search_client' to search for a client by their name for their ID" \
+        "'get_all_clients' to get all clients in the db" \
+        "'portfolio_asset_trades' to get all trades for a particular asset within a portfolio (ordered by trade date)" \
     )
 
     parser.add_argument(
         "--name",
         type=str,
         help="Name of the client (use with 'add_client', 'search_client')"
+    )
+
+    parser.add_argument(
+        "--portfolio_id",
+        type=str,
+        help="ID of the portfolio (use with 'portfolio_asset_trades')"
+    )
+
+    parser.add_argument(
+        "--asset_id",
+        type=str,
+        help="ID of the asset (use with 'portfolio_asset_trades')"
     )
 
     args = parser.parse_args()
@@ -62,5 +75,11 @@ if __name__ == "__main__":
     elif args.action == "get_all_clients":
         results, columns = get_all_clients(conn)
         print(format_query_results(results, columns))
+    elif args.action == "portfolio_asset_trades":
+        if not args.portfolio_id or not args.asset_id:
+            print("Please prove both a portfolio id with --portfolio_id and asset id with --asset_id")
+        else:
+            results, columns = get_all_trades_for_asset_in_portfolio(conn, args.portfolio_id, args.asset_id)
+            print(format_query_results(results, columns))
         
 

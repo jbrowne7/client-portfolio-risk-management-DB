@@ -10,6 +10,20 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
+def get_all_trades_for_asset_in_portfolio(conn, portfolio_id, asset_id):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT *
+        FROM trades
+        WHERE portfolio_id = %s
+            AND asset_id = %s
+        ORDER BY trade_date;
+    """, (portfolio_id, asset_id))
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
 def get_all_clients(conn):
     cur = conn.cursor()
     cur.execute("SELECT client_id, name FROM clients;")
@@ -37,16 +51,16 @@ def add_client(conn, name):
 def get_percentage_invested(conn):
     cur = conn.cursor()
     cur.execute("""
-            SELECT p.portfolio_id,
-                ROUND(
-                    (COALESCE(SUM(t.quantity * t.price), 0) /
-                    (COALESCE(SUM(t.quantity * t.price), 0) + p.cash_balance)) * 100, 2
-                ) AS percentage_invested
+        SELECT p.portfolio_id,
+            ROUND(
+                (COALESCE(SUM(t.quantity * t.price), 0) /
+                (COALESCE(SUM(t.quantity * t.price), 0) + p.cash_balance)) * 100, 2
+            ) AS percentage_invested
 
-            FROM portfolios p
-            LEFT JOIN trades t ON p.portfolio_id = t.portfolio_id
-            GROUP BY p.portfolio_id, p.cash_balance;
-            """)
+        FROM portfolios p
+        LEFT JOIN trades t ON p.portfolio_id = t.portfolio_id
+        GROUP BY p.portfolio_id, p.cash_balance;
+    """)
     results = cur.fetchall()
     columns = [desc[0] for desc in cur.description]
     cur.close()
