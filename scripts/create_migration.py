@@ -14,7 +14,7 @@ def create_migration_file(migration_name):
     print(filepath)
 
     with open(filepath, "w") as f:
-        f.write(f"Migration: {migration_name}\n-- Created: {datetime.now()}\n\n-- Write your SQL changes below\n")
+        f.write(f"-- Migration: {migration_name}\n-- Created: {datetime.now()}\n\n-- Write your SQL changes below\n")
     print(f"Created migration file: {filepath}")
 
 if __name__ == "__main__":

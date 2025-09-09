@@ -1,5 +1,5 @@
-Migration: add_cash_balance_to_portfolios
--- Created: 2025-09-09 15:05:22.416110
+-- Migration: add_cash_balance_to_portfolios
+-- Created: 2025-09-09 15:13:29.199351
 
 -- Write your SQL changes below
 
