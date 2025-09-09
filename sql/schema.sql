@@ -26,9 +26,15 @@ CREATE TABLE IF NOT EXISTS trades (
     price NUMERIC NOT NULL
 );
 
-create table IF NOT EXISTS prices (
+CREATE TABLE IF NOT EXISTS prices (
     asset_id INTEGER NOT NULL REFERENCES assets(asset_id),
     price_date DATE NOT NULL,
     price NUMERIC NOT NULL,
     PRIMARY KEY (asset_id, price_date)
 );
+
+CREATE TABLE IF NOT EXISTS asset_notes {
+    note_id SERIAL PRIMARY KEY,
+    asset_id INTEGER,
+    note TEXT
+}
