@@ -15,14 +15,15 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "action",
-        choices=["init", "load_data", "total_val", "port_vals", 
+        choices=["init", "load_data", "get_portfolios_with_clients", "port_vals", 
                  "percent_invested", "add_client", "search_client", 
                  "get_all_clients", "portfolio_asset_trades",
                  "get_top_portfolios", "get_clients_with_no_trades",
-                 "get_trade_counts_by_asset"],
+                 "get_trade_counts_by_asset", "get_recent_trades",
+                 "get_assets_latest_price"],
         help="Action to perform: 'init' to create tables, " \
         "'load_data' to load sample data, " \
-        "'total_val' to get a mapping of client names to portfolio ids, " \
+        "'get_portfolios_with_clients' to get a mapping of client names to portfolio ids, " \
         "'port_vals' to get values of each portfolio" \
         "'percent_invested' to get percentage invested for each portfolio" \
         "'add_client' to add a new client to the clients table" \
@@ -31,7 +32,9 @@ if __name__ == "__main__":
         "'portfolio_asset_trades' to get all trades for a particular asset within a portfolio (ordered by trade date)" \
         "'get_top_portfolios' to get top `n` portfolios by total value, default `n` is 5" \
         "'get_clients_with_no_trades' to get clients who have not got any trades in any of their portfolios" \
-        "'get_trade_counts_by_asset' to get a total count of trades for each asset"
+        "'get_trade_counts_by_asset' to get a total count of trades for each asset" \
+        "'get_recent_trades' to get all trades opened within the last 30 days"
+        "'get_assets_latest_price' to get the latest price of assets"
     )
 
     parser.add_argument(
@@ -66,8 +69,8 @@ if __name__ == "__main__":
         create_tables(conn)
     elif args.action == "load_data":
         load_sample_data(conn)
-    elif args.action == "total_val":
-        results, columns = get_clients_with_portfolios(conn)
+    elif args.action == "get_portfolios_with_clients":
+        results, columns = get_portfolios_with_clients(conn)
     elif args.action == "port_vals":
         results, columns = get_portfolio_total_values(conn)
     elif args.action == "percent_invested":
@@ -98,6 +101,10 @@ if __name__ == "__main__":
         results, columns = get_clients_with_no_trades(conn)
     elif args.action == "get_trade_counts_by_asset":
         results, columns = get_trade_counts_by_asset(conn)
+    elif args.action == "get_recent_trades":
+        results, columns = get_recent_trades(conn)
+    elif args.action == "get_assets_latest_price":
+        results, columns = get_assets_latest_price(conn)
     
     if results and columns:
         print(format_query_results(results, columns))

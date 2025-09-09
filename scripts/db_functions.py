@@ -10,6 +10,53 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
+
+
+
+# This function might not really be practical as a left join? Wanted to show usage / knowledge of left
+# joins but I think every asset should have at least one price entry so not sure, this was the only
+# idea I could think of for using left join at the moment. This problem is because most fields in my schema
+# are required I think.
+def get_assets_latest_price(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT a.asset_id, a.symbol, p.price_date, p.price
+        FROM assets a
+        LEFT JOIN prices p ON a.asset_id = p.asset_id AND p.price_date = (
+            SELECT MAX(price_date) FROM prices WHERE asset_id = a.asset_id
+        )
+        ORDER BY a.asset_id;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
+def get_portfolios_with_clients(conn):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT p.portfolio_id, c.name AS client_name
+        FROM portfolios p
+        INNER JOIN clients c ON p.client_id = c.client_id;
+    """)
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
+def get_recent_trades(conn, days=30):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT *
+        FROM trades
+        WHERE trade_date >= NOW() - INTERVAL '%s days'
+        ORDER BY trade_date DESC;
+    """, (days,))
+    results = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    cur.close()
+    return results, columns
+
 def get_top_portfolios_by_value(conn, limit=5):
     cur = conn.cursor()
     cur.execute("""
@@ -104,19 +151,6 @@ def get_percentage_invested(conn):
         FROM portfolios p
         LEFT JOIN trades t ON p.portfolio_id = t.portfolio_id
         GROUP BY p.portfolio_id, p.cash_balance;
-    """)
-    results = cur.fetchall()
-    columns = [desc[0] for desc in cur.description]
-    cur.close()
-    return results, columns
-
-
-def get_clients_with_portfolios(conn):
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT c.name AS client_name, p.portfolio_id
-        FROM clients c
-        JOIN portfolios p ON c.client_id = p.client_id;
     """)
     results = cur.fetchall()
     columns = [desc[0] for desc in cur.description]
