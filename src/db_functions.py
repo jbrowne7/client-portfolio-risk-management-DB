@@ -10,6 +10,73 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
+def add_price(conn, asset_id, price, price_date=None):
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO prices (asset_id, price_date, price)
+        VALUES (%s, COALESCE(%s, CURRENT_DATE), %s)
+        RETURNING asset_id, price_date;
+        """,
+        (asset_id, price_date, price),
+    )
+    inserted_asset_id, inserted_date = cur.fetchone()
+    conn.commit()
+    cur.close()
+    print(f"Added price for asset {inserted_asset_id} on {inserted_date}: {price}")
+    return inserted_asset_id, inserted_date
+
+
+def add_asset(conn, symbol, asset_class, base_currency):
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO assets (symbol, asset_class, base_currency)
+        VALUES (%s, %s, %s)
+        RETURNING asset_id;
+        """,
+        (symbol, asset_class, base_currency),
+    )
+    asset_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    print(f"Added asset '{symbol}' ({asset_class}, {base_currency}) with asset_id {asset_id}")
+    return asset_id
+
+def add_trade(conn, portfolio_id, asset_id, side, quantity, price, trade_date):
+    if side not in ("BUY", "SELL"):
+        raise ValueError("side must be 'BUY' or 'SELL'")
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO trades (portfolio_id, asset_id, trade_date, side, quantity, price)
+        VALUES (%s, %s, COALESCE(%s, NOW()), %s, %s, %s)
+        RETURNING trade_id;
+        """,
+        (portfolio_id, asset_id, trade_date, side, quantity, price),
+    )
+    trade_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    print(f"Added trade {trade_id}: {side} {quantity} @ {price} (portfolio {portfolio_id}, asset {asset_id})")
+    return trade_id
+
+def add_portfolio(conn, client_id, cash_balance=0):
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO portfolios (client_id, cash_balance)
+        VALUES (%s, %s)
+        RETURNING portfolio_id;
+        """,
+        (client_id, cash_balance),
+    )
+    portfolio_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    print(f"Added portfolio '{portfolio_id}' for client_id {client_id} (cash_balance={cash_balance})")
+    return portfolio_id
+
 def get_assets_with_possible_notes(conn):
     cur = conn.cursor()
     cur.execute("""

@@ -43,6 +43,10 @@ Actions:
   make_migration                   Create db migration file
   run_migration                    Run a migration file
   wipe_db                          Deletes all records in the db
+  add_asset                        Create a new asset
+  add_price                        Add a price row for an asset
+  add_portfolio                    Add a portfolio for a client
+  add_trade                        Add a trade for a portfolio
 
 Options:
   -h, --help                  Show this help message
@@ -50,6 +54,13 @@ Options:
   --portfolio_id <id>         ID of the portfolio (use with 'portfolio_asset_trades')
   --asset_id <id>             ID of the asset (use with 'portfolio_asset_trades')
   --n <number>                Number of portfolios to get (use with 'get_top_portfolios')
+  --client_id <id>            ID of the client (use with 'add_portfolio')
+  --cash_balance <number>     Cash value for a portfolio (use with 'add_portfolio')
+  --symbol <text>             Asset symbol (use with 'add_asset')
+  --asset_class <text>        Asset class (use with 'add_asset')
+  --base_currency <text>      Base currency (use with 'add_asset')
+  --price <number>            Price value (use with 'add_price')
+  --date <YYYY-MM-DD>         Price date (use with 'add_price', 'add_trade')
 """
 
     choices=["init", "load_data", "get_portfolios_with_clients", "port_vals", 
@@ -59,7 +70,9 @@ Options:
                 "get_trade_counts_by_asset", "get_recent_trades",
                 "get_assets_latest_price", "get_notes_with_possible_assets",
                 "get_all_assets_and_notes", "get_assets_with_possible_notes",
-                "make_migration", "run_migration", "wipe_db"]
+                "make_migration", "run_migration", "wipe_db", "add_portfolio",
+                "add_price","add_trade", "add_asset"
+                ]
     
     
     parser = argparse.ArgumentParser()
@@ -85,6 +98,13 @@ Options:
     parser.add_argument("--portfolio_id", type=int, help="Portfolio ID")
     parser.add_argument("--asset_id", type=int, help="Asset ID")
     parser.add_argument("--n", type=int, help="Limit for top portfolios")
+    parser.add_argument("--client_id", type=int, help="Client ID")
+    parser.add_argument("--cash_balance", type=int, help="Cash balance")
+    parser.add_argument("--symbol", type=str, help="Asset symbol")
+    parser.add_argument("--asset_class", type=str, help="Asset class")
+    parser.add_argument("--base_currency", type=str, help="Base currency")
+    parser.add_argument("--price", type=float, help="Price value")
+    parser.add_argument("--price_date", type=str, help="Price date (YYYY-MM-DD)")
 
     args = parser.parse_args()
     conn = get_connection()
@@ -136,6 +156,26 @@ Options:
         results, columns = get_all_assets_and_notes(conn)
     elif args.action == "get_assets_with_possible_notes":
         results, columns = get_assets_with_possible_notes(conn)
+    elif args.action == "add_portfolio":
+        if not args.client_id or not args.cash_balance:
+            print("Please provide the client ID and cash balance of the portfolio with --client_id and --cash-balance")
+        else:
+            add_portfolio(conn, args.client_id, args.cash_balance)
+    elif args.action == "add_trade":
+        if not args.portfolio_id or not args.asset_id or not args.side or not args.quantity or not args.price or not args.date:
+            print("Please provide: --portfolio_id --asset_id --side --quantity --price --date")
+        else:
+            add_trade(conn, args.portfolio_id, args.asset_id, args.side, args.quantity, args.price, args.date)
+    elif args.action == "add_asset":
+        if not args.symbol or not args.asset_class or not args.base_currency:
+            print("Please provide --symbol --asset_class --base_currency")
+        else:
+            asset_id = add_asset(conn, args.symbol, args.asset_class, args.base_currency)
+    elif args.action == "add_price":
+        if args.asset_id is None or args.price is None:
+            print("Please provide --asset_id --price --price_date")
+        else:
+            asset_id, price_date = add_price(conn, args.asset_id, args.price, args.price_date)
     elif args.action == "wipe_db":
         reset_db(conn)
     elif args.action == "make_migration":
