@@ -71,7 +71,7 @@ Options:
                 "get_assets_latest_price", "get_notes_with_possible_assets",
                 "get_all_assets_and_notes", "get_assets_with_possible_notes",
                 "make_migration", "run_migration", "wipe_db", "add_portfolio",
-                "add_price","add_trade", "add_asset"
+                "add_price","add_trade", "add_asset", "generate_data"
                 ]
     
     
@@ -112,6 +112,8 @@ Options:
     results = columns = None
     if args.action == "init":
         create_tables(conn)
+    elif args.action == "generate_data":
+        generate_sample_data()
     elif args.action == "load_data":
         load_sample_data(conn)
     elif args.action == "get_portfolios_with_clients":

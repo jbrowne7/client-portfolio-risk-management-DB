@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: portfolio_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: portfolio_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"

@@ -13,8 +13,9 @@ NUM_PRICES = 100
 def generate_clients(conn, num):
     cur = conn.cursor()
     for _ in range(num):
-        name = fake.name()
-        cur.execute("INSERT INTO clients (name) VALUES (%s);", (name,))
+        first_name = fake.first_name()
+        last_name = fake.last_name()
+        cur.execute("INSERT INTO clients (first_name, last_name) VALUES (%s, %s);", (first_name, last_name))
     conn.commit()
     cur.close()
 
