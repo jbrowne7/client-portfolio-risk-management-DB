@@ -1,13 +1,11 @@
 CREATE TABLE IF NOT EXISTS clients (
     client_id SERIAL PRIMARY KEY,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL
+    name VARCHAR(200) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS portfolios (
     portfolio_id SERIAL PRIMARY KEY,
-    client_id INTEGER NOT NULL REFERENCES clients(client_id),
-    cash_balance NUMERIC NOT NULL
+    client_id INTEGER NOT NULL REFERENCES clients(client_id)
 );
 
 CREATE TABLE IF NOT EXISTS assets (
@@ -32,10 +30,4 @@ CREATE TABLE IF NOT EXISTS prices (
     price_date DATE NOT NULL,
     price NUMERIC NOT NULL,
     PRIMARY KEY (asset_id, price_date)
-);
-
-CREATE TABLE IF NOT EXISTS asset_notes (
-    note_id SERIAL PRIMARY KEY,
-    asset_id INTEGER,
-    note TEXT
 );

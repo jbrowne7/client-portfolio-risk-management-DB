@@ -3,7 +3,7 @@ import sys
 from db_functions import *
 from clear_data import reset_db
 from create_migration import create_migration_file
-from run_migration import run_migration
+from run_migration import run_migration, run_all_migrations
 
 def format_query_results(results, columns):
     if not results:
@@ -42,6 +42,7 @@ Actions:
   get_assets_with_possible_notes   Get all assets matched with notes if possible
   make_migration                   Create db migration file
   run_migration                    Run a migration file
+  run_all_migrations               Run all migration files in order
   wipe_db                          Deletes all records in the db
   add_asset                        Create a new asset
   add_price                        Add a price row for an asset
@@ -70,7 +71,7 @@ Options:
                 "get_trade_counts_by_asset", "get_recent_trades",
                 "get_assets_latest_price", "get_notes_with_possible_assets",
                 "get_all_assets_and_notes", "get_assets_with_possible_notes",
-                "make_migration", "run_migration", "wipe_db", "add_portfolio",
+                "make_migration", "run_migration", "run_all_migrations", "wipe_db", "add_portfolio",
                 "add_price","add_trade", "add_asset", "generate_data"
                 ]
     
@@ -190,6 +191,8 @@ Options:
             print("Please provide the filepath for the migration file with --name")
         else:
             run_migration(args.name)
+    elif args.action == "run_all_migrations":
+        run_all_migrations()
 
     if results and columns:
         print(format_query_results(results, columns))
