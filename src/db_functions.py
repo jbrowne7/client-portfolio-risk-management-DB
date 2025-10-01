@@ -132,7 +132,7 @@ def get_assets_latest_price(conn):
 def get_portfolios_with_clients(conn):
     cur = conn.cursor()
     cur.execute("""
-        SELECT p.portfolio_id, c.name AS client_name
+        SELECT p.portfolio_id, CONCAT(c.first_name, ' ', c.last_name) AS client_name
         FROM portfolios p
         INNER JOIN clients c ON p.client_id = c.client_id;
     """)
@@ -172,7 +172,7 @@ def get_top_portfolios_by_value(conn, limit=5):
 def get_clients_with_no_trades(conn):
     cur = conn.cursor()
     cur.execute("""
-        SELECT c.client_id, c.name
+        SELECT c.client_id, CONCAT(c.first_name, ' ', c.last_name) AS client_name
         FROM clients c
         WHERE c.client_id NOT IN (
             SELECT p.client_id
@@ -214,7 +214,7 @@ def get_all_trades_for_asset_in_portfolio(conn, portfolio_id, asset_id):
 
 def get_all_clients(conn):
     cur = conn.cursor()
-    cur.execute("SELECT client_id, name FROM clients;")
+    cur.execute("SELECT client_id, first_name, last_name, CONCAT(first_name, ' ', last_name) AS full_name FROM clients;")
     results = cur.fetchall()
     columns = [desc[0] for desc in cur.description]
     cur.close()
@@ -222,19 +222,30 @@ def get_all_clients(conn):
 
 def search_clients_by_name(conn, name):
     cur = conn.cursor()
-    cur.execute("SELECT client_id, name FROM clients WHERE name ILIKE %s;", (f"%{name}%",))
+    cur.execute("""
+        SELECT client_id, first_name, last_name, CONCAT(first_name, ' ', last_name) AS full_name 
+        FROM clients 
+        WHERE CONCAT(first_name, ' ', last_name) ILIKE %s 
+           OR first_name ILIKE %s 
+           OR last_name ILIKE %s;
+    """, (f"%{name}%", f"%{name}%", f"%{name}%"))
     results = cur.fetchall()
     columns = [desc[0] for desc in cur.description]
     cur.close()
     return results, columns
 
 def add_client(conn, name):
+    name_parts = name.strip().split(' ', 1)
+    first_name = name_parts[0]
+    last_name = name_parts[1] if len(name_parts) > 1 else ''
+    
     cur = conn.cursor()
-    cur.execute("INSERT INTO clients (name) VALUES (%s) RETURNING client_id;", (name,))
+    cur.execute("INSERT INTO clients (first_name, last_name) VALUES (%s, %s) RETURNING client_id;", (first_name, last_name))
     client_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
-    print(f"Added client '{name}' with client_id {client_id}")
+    print(f"Added client '{first_name} {last_name}' with client_id {client_id}")
+    return client_id
 
 def get_percentage_invested(conn):
     cur = conn.cursor()
