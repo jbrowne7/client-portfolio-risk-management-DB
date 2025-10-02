@@ -1,9 +1,9 @@
 # Client-Portfolio-Management-DB
+PostgreSQL and python based system for to store and manage data about clients, portfolios, assets, and trades.
 
 ## Table of Contents
-- [Overview](#overview)
 - [Features](#features)
-- [Live Demo](#live-demo)
+- [Demo video](#demo-video)
 - [Database Design](#database-design)
   - [Entities](#entities)
   - [Cardinalities](#cardinalities)
@@ -15,12 +15,8 @@
   - [Basic Commands](#basic-commands)
   - [Management Commands](#management-commands)
 
-## Overview
-An investment company wants a system to manage client portfolios and assess portfolio risk. 
-They need to store data about clients, their portfolios, individual assets, transactions, and run queries to support decision-making.
-
 ## Features
-- **Client Management**: Store and manage client information with first/last names
+- **Client Data Management**: Store and manage client information
 - **Portfolio Tracking**: Track multiple portfolios per client with cash balances
 - **Asset Management**: Support for stocks, bonds, forex, and crypto across multiple currencies
 - **Trade Recording**: Complete trade history with buy/sell transactions
@@ -28,7 +24,7 @@ They need to store data about clients, their portfolios, individual assets, tran
 - **Data Migration**: Migration workflow for database schema changes
 - **CLI Interface**: Command-line interface for all operations
 
-## Live Demo
+## Demo Video
 
 
 [![Portfolio Risk Management Demo](https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
