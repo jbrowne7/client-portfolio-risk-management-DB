@@ -27,7 +27,7 @@ PostgreSQL and python based system for to store and manage data about clients, p
 ## Demo Video
 
 
-[![Portfolio Risk Management Demo](https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+[![Portfolio Risk Management Demo](https://img.youtube.com/vi/3JMCl4MWYPk/0.jpg)](https://jamesbrowne.dev/posts/client-portfolio-management-db/#demo-video)
 
 Click the image above to watch a demonstration of the client portfolio management system
 
